@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>硬木人生：香港籃球崛起</title>
+    <style>
+        body {
+            background-color: #0b0e14;
+            color: #d1d5db;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+        .panel {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 { color: #38bdf8; margin-top: 0; }
+        .btn {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+            text-align: left;
+            transition: 0.2s;
+        }
+        .btn:hover { background-color: #22c55e; }
+        .btn-special { background-color: #2563eb; }
+        .btn-special:hover { background-color: #3b82f6; }
+        .btn-danger { background-color: #dc2626; }
+        
+        .chapter-box {
+            background: #030712;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #1f2937;
+            margin-bottom: 20px;
+        }
+        .chapter-title {
+            color: #facc15;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .chapter-content {
+            font-size: 15px;
+            white-space: pre-line;
+            color: #e5e7eb;
+        }
+        .status-panel {
+            background: #111827;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #38bdf8;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        .tag { color: #facc15; font-weight: bold; }
+        .highlight { color: #38bdf8; font-weight: bold; }
+        .fail-text { color: #f87171; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>🏀 《硬木人生：香港籃球崛起》</h1>
+    <p>從十八區街場到學界 D1、NCAA 與 NBA 殿堂</p>
+
+    <div id="start-screen" class="panel">
+        <h3>天賦與十八區出身生成中：</h3>
+        <button class="btn btn-special" onclick="initGame()">🎲 開啟香港本土籃球生涯</button>
+    </div>
+
+    <div id="game-screen" class="panel" style="display:none;">
+        <h3>📥 球員數據面板</h3>
+        <div id="status-panel" class="status-panel"></div>
+        <hr style="border-color: #1f2937; margin: 20px 0;">
+        <h2>📜 籃球生涯履歷</h2>
+        <div id="chapter-container"></div>
+        <div id="options-panel" class="panel" style="background:#030712;"></div>
+    </div>
+
+    <script>
+        let p = {
+            name: "陳長勝", age: 12, height: 162, weight: 50,
+            district: "", school: "", tier: "D3",
+            position: "控球後衛 (PG)", teamType: "中學學界",
+            ath: 0, iq: 0, xin: 0, yun: 0,
+            fame: "街場無名小卒", health: "100% (健康)",
+            chapterNum: 1, currentTurnOptions: []
+        };
+
+        const districts = [
+            "九龍城區", "油尖旺區", "深水埗區", "灣仔區", "中西區", "東區", "觀塘區", "黃大仙區",
+            "荃灣區", "屯門區", "元朗區", "沙田區", "大埔區", "葵青區", "西貢區", "北區", "南區", "離島區"
+        ];
+
+        const d1Schools = ["拔萃男書院 (DBS)", "英華書院", "喇沙書院", "協恩中學", "聖若瑟書院"];
+        const d2d3Schools = ["區內普通官立中學", "地區津貼中學", "社區體育會培訓班球隊"];
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        function updateStatusPanel() {
+            document.getElementById('status-panel').innerHTML = `
+<b>【球員】</b> ${p.name} | <b>【年齡】</b> ${p.age} 歲 (中一升學) | <b>【身高/體重】</b> <span class="highlight">${p.height} cm / ${p.weight} kg</span><br>
+<b>【居住地區】</b> ${p.district} | <b>【就讀學校】</b> <span class="tag">${p.school} (${p.tier})</span><br>
+<b>【場上位置】</b> ${p.position} | <b>【名氣】</b> ${p.fame} | <b>【身體狀態】</b> ${p.health}<br>
+<b>【四大屬性】</b> 體能爆發：${p.ath} ｜ 籃球IQ：${p.iq} ｜ 抗壓心智：${p.xin} ｜ 運氣/機緣：${p.yun}
+            `;
+        }
+
+        function appendChapter(title, text) {
+            let container = document.getElementById('chapter-container');
+            let div = document.createElement('div');
+            div.className = 'chapter-box';
+            div.innerHTML = `
+                <div class="chapter-title">第 ${p.chapterNum} 章：${title}</div>
+                <div class="chapter-content">${text}</div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function initGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+
+            p.district = districts[getRandomInt(0, districts.length - 1)];
+            p.ath = getRandomInt(60, 95);
+            p.iq = getRandomInt(60, 95);
+            p.xin = getRandomInt(60, 95);
+            p.yun = getRandomInt(50, 100);
+
+            // 12 歲升中一，機率直入 D1 名校或 D2/D3 學校
+            let startRand = getRandomInt(1, 100) + (p.yun / 5);
+            if (startRand > 80) {
+                p.school = d1Schools[getRandomInt(0, d1Schools.length - 1)];
+                p.tier = "D1 組別";
+                p.fame = "名校體育特招生";
+            } else {
+                p.school = d2d3Schools[getRandomInt(0, d2d3Schools.length - 1)];
+                p.tier = getRandomInt(1, 2) === 1 ? "D2 組別" : "D3 組別";
+                p.fame = "區內普通新星";
+            }
+
+            updateStatusPanel();
+
+            let introText = `🏀 【香港籃球人生起點】
+你出生並居住於<b>【${p.district}】</b>！從小在區內街場打球長大。
+
+<b>【中一升學結果】</b>：
+今年你 12 歲，正式升上中學！憑藉國小階段的籃球天賦，你順利考入 <b>【${p.school}】</b>，並加入學校籃球隊預備參加香港學界籃球賽（${p.tier}）！`;
+
+            appendChapter("12歲 · 十八區出身與升中學界起點", introText);
+            presentChoices12();
+        }
+
+        function presentChoices12() {
+            p.age = 12;
+            let optionsHtml = `<h3>👉 【12 歲 · 核心球風抉擇】中一加入校隊，你想發展什麼球風？</h3>`;
+
+            optionsHtml += `<button class="btn" onclick="makeChoice12(1)">【選項 1】: 苦練外線三分與控球，成為場上大腦 (加籃球IQ)</button>`;
+            optionsHtml += `<button class="btn" onclick="makeChoice12(2)">【選項 2】: 強化體能與過人突破，做衝擊籃框的得分手 (加體能)</button>`;
+            optionsHtml += `<button class="btn" onclick="makeChoice12(3)">【選項 3】: 專注防守與抄截，成為隊中防守鐵閘</button>`;
+
+            document.getElementById('options-panel').innerHTML = optionsHtml;
+            scrollToBottom();
+        }
+
+        function makeChoice12(num) {
+            p.chapterNum += 1;
+            p.height += getRandomInt(5, 8);
+            p.weight += getRandomInt(3, 5);
+
+            if (num === 1) p.iq += 15;
+            else if (num === 2) p.ath += 15;
+            else p.xin += 15;
+
+            appendChapter("12歲 · 學界新人賽", `經過一整年的苦練，你的身高長到 <b>${p.height} cm</b>！代表 ${p.school} 出戰學界比賽，初露頭角！`);
+            updateStatusPanel();
+            generateTurnForAge(13);
+        }
+
+        function generateTurnForAge(targetAge) {
+            p.age = targetAge;
+            p.height += getRandomInt(3, 6);
+            p.weight += getRandomInt(2, 4);
+
+            if (p.age >= 36) {
+                appendChapter(`${p.age}歲 · 退役殿堂`, `🏆 【生涯終章】你宣佈退役，為香港籃球立下汗馬功勞，成為本地體壇傳奇！`);
+                document.getElementById('options-panel').innerHTML = `<button class="btn btn-danger" onclick="location.reload()">🔄 重開全新生涯</button>`;
+                updateStatusPanel();
+                scrollToBottom();
+                return;
+            }
+
+            // 不同年齡階段動態事件
+            let scenario = {};
+            if (p.age <= 16) {
+                // 學界階段 (13-16歲)
+                scenario = {
+                    title: `${p.age}歲 · 全港學界精英賽決賽`,
+                    desc: `比賽來到最後一節，代表 ${p.school} (${p.tier}) 的你面對強敵！只要贏下比賽，學校就能升上 D1，或吸引名校 (DBS/英華) 挖角！`,
+                    opts: [
+                        { name: "1. 執行絕殺，親自出手三分！(需要高抗壓與氣運)", risk: "high", addAth: 15, addFame: "學界 MVP" },
+                        { name: "2. 吸引雙人包夾，傳球給空檔隊友得分", risk: "low", addAth: 10, addFame: "最佳控衛" }
+                    ]
+                };
+            } else if (p.age <= 18) {
+                // 大學/升學選擇 (17-18歲)
+                scenario = {
+                    title: `${p.age}歲 · 畢業升學與出路選擇`,
+                    desc: `中學畢業在即！你的學界表現吸引了多方關注：`,
+                    opts: [
+                        { name: "1. 挑戰赴美，參加 NCAA D1 大學試訓 (需要極高體能與氣運)", risk: "high", addAth: 25, newSchool: "美國 NCAA D1 大學" },
+                        { name: "2. 留在香港入讀港大 (HKU) / 中大 (CUHK)，征戰大專聯賽", risk: "low", addAth: 10, newSchool: "香港大學 (HKU)" }
+                    ]
+                };
+            } else {
+                // 職業階段 (19歲+)
+                scenario = {
+                    title: `${p.age}歲 · 職業賽事與選秀`,
+                    desc: `進入職業籃球階段，挑戰更高水平賽事：`,
+                    opts: [
+                        { name: "1. 衝擊 NBA / G-League 選秀試訓！", risk: "high", addAth: 30, newSchool: "NBA G-League / NBA" },
+                        { name: "2. 簽約香港甲一聯賽 (A1) 頂級球隊，成為本土球星", risk: "low", addAth: 15, newSchool: "香港甲一聯賽 (A1)" }
+                    ]
+                };
+            }
+
+            p.currentTurnOptions = scenario;
+
+            let optsHtml = `<h3>👉 【${p.age} 歲 · 動態事件：${p.currentTurnOptions.title}】</h3><p>${p.currentTurnOptions.desc}</p>`;
+            p.currentTurnOptions.opts.forEach((o, index) => {
+                optsHtml += `<button class="btn" onclick="processEventChoice(${index})">${o.name}</button>`;
+            });
+
+            document.getElementById('options-panel').innerHTML = optsHtml;
+            scrollToBottom();
+        }
+
+        function processEventChoice(optIndex) {
+            p.chapterNum += 1;
+            let chosen = p.currentTurnOptions.opts[optIndex];
+
+            let isSuccess = (getRandomInt(1, 100) + (p.yun / 4)) > (chosen.risk === "high" ? 45 : 20);
+
+            if (isSuccess) {
+                p.ath += chosen.addAth;
+                if (chosen.addFame) p.fame = chosen.addFame;
+                if (chosen.newSchool) {
+                    p.school = chosen.newSchool;
+                    p.tier = "職業/大專";
+                    // 升上 D1 名校判定
+                    if (p.age <= 16 && p.tier !== "D1 組別") {
+                        p.school = d1Schools[getRandomInt(0, d1Schools.length - 1)];
+                        p.tier = "D1 組別";
+                    }
+                }
+
+                let logText = `🎉 <b>【表現完美！】</b> 你成功選擇了「${chosen.name}」！獲得了全場矚目，屬性大幅提升，並獲得了更高層級球隊的關注！`;
+                appendChapter(`${p.age}歲 · 賽果`, logText);
+            } else {
+                p.xin = Math.max(0, p.xin - 10);
+                appendChapter(`${p.age}歲 · 遭遇波折`, `<span class="fail-text">❌ 【執行失敗 / 遭遇挫折！】</span> 關鍵時刻表現失誤，未能成功，抗壓心智有所受損。`);
+            }
+
+            updateStatusPanel();
+            generateTurnForAge(p.age + 1);
+        }
+    </script>
+</body>
+</html>
