@@ -1,501 +1,581 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>籃球人生 HARDWOOD LIFE v2.0.18</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>籃球人生 HARDWOOD LIFE - HK Edition</title>
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #0b1120; color: #f3f4f6; margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 440px; background: #0f172a; border-radius: 14px; border: 1px solid #1e293b; padding: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
+        :root {
+            --bg-dark: #0b1120;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --primary: #f97316;
+            --primary-hover: #ea580c;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --blue: #38bdf8;
+            --red: #ef4444;
+            --green: #22c55e;
+            --gold: #eab308;
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
+        body { background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; justify-content: center; min-height: 100vh; }
+        .app { width: 100%; max-width: 480px; background: var(--bg-dark); position: relative; overflow-x: hidden; padding-bottom: 20px; border-left: 1px solid var(--bg-card); border-right: 1px solid var(--bg-card); min-height: 100vh;}
         
-        .league-badge-top { font-size: 10px; font-weight: bold; color: #38bdf8; background: #0284c722; border: 1px solid #0284c755; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
-        h1.title { font-size: 24px; text-align: center; color: #f97316; margin: 5px 0 2px 0; font-weight: 900; letter-spacing: 1.5px; }
-        .subtitle { font-size: 11px; text-align: center; color: #64748b; margin-bottom: 14px; }
+        .hidden { display: none !important; }
+        .scrollable { overflow-y: auto; padding: 15px; }
 
-        /* 頂部固定球員卡片 */
-        .player-card { background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; }
-        .player-header { display: flex; align-items: center; justify-content: space-between; }
-        .number-box { background: #ea580c; color: white; font-size: 20px; font-weight: bold; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
-        .player-info-main { flex-grow: 1; margin-left: 10px; }
-        .player-name { font-size: 16px; font-weight: bold; }
-        .player-tag { background: #7c2d12; color: #fdba74; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
-        .star-tag { background: #1e3a8a; color: #93c5fd; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
-        .player-sub { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+        /* 頂部球員卡片 */
+        .sticky-header { position: sticky; top: 0; background: var(--bg-dark); z-index: 100; padding: 10px 15px; border-bottom: 1px solid var(--bg-card-light); }
+        .league-badge { font-size: 10px; font-weight: 800; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 5px;}
+        .league-badge span { background: #0284c733; padding: 2px 6px; border-radius: 4px; border: 1px solid #0284c766; }
+        
+        .player-card { display: flex; align-items: flex-start; gap: 12px; }
+        .number-box { background: var(--primary); color: white; font-size: 24px; font-weight: 900; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 8px; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3); }
+        .info-col { flex: 1; }
+        .name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .name-txt { font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+        .archetype-tag { font-size: 10px; color: var(--gold); border: 1px solid var(--gold); padding: 1px 4px; border-radius: 4px; background: rgba(234, 179, 8, 0.1); }
+        .body-txt { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
         .ovr-box { text-align: center; }
-        .ovr-val { font-size: 24px; font-weight: 900; color: #ef4444; }
-        .ovr-lbl { font-size: 9px; color: #64748b; font-weight: bold; }
+        .ovr-val { font-size: 26px; font-weight: 900; color: var(--red); line-height: 1; }
+        .ovr-lbl { font-size: 10px; color: var(--text-muted); font-weight: bold; }
 
-        .stats-grid-top { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; text-align: center; background: #0f172a; padding: 8px; border-radius: 6px; }
-        .stat-top-val { font-size: 13px; font-weight: bold; color: #38bdf8; }
-        .stat-top-lbl { font-size: 9px; color: #64748b; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; text-align: center; }
+        .stat-item { background: var(--bg-card); padding: 6px 0; border-radius: 6px; }
+        .stat-val { font-size: 14px; font-weight: 900; color: var(--green); }
+        .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 
-        .badge-pill-container { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
-        .badge-pill { background: #854d0e; color: #fef08a; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; border: 1px solid #ca8a04; }
+        .badges-container { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+        .badge { font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; border: 1px solid var(--bg-card-light); }
+        .badge.star { background: #1e3a8a; color: #93c5fd; border-color: #3b82f6; }
+        .badge.fame { background: #713f12; color: #fef08a; border-color: #ca8a04; }
 
-        /* 表單與選擇 */
-        .form-group { margin-bottom: 12px; }
-        label { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; background: #1e293b; border: 1px solid #334155; color: white; padding: 9px; border-radius: 6px; font-size: 13px; }
+        /* UI 元素 */
+        h1.title { color: var(--primary); text-align: center; font-size: 22px; font-weight: 900; margin: 10px 0; letter-spacing: 2px; text-shadow: 0 0 10px rgba(249,115,22,0.3); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: bold; }
+        input, select { width: 100%; background: var(--bg-card); border: 1px solid var(--bg-card-light); color: white; padding: 12px; border-radius: 8px; font-size: 14px; outline: none; }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        .grid-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .chip { background: var(--bg-card); border: 1px solid var(--bg-card-light); color: var(--text-muted); padding: 10px 4px; font-size: 11px; text-align: center; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .chip.active { background: var(--primary-hover); color: white; border-color: var(--primary); box-shadow: 0 0 8px rgba(234, 88, 12, 0.4); }
 
-        .btn-grid-5 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-        .chip-btn { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 7px 2px; font-size: 10px; border-radius: 6px; cursor: pointer; text-align: center; }
-        .chip-btn.active { background: #ea580c; border-color: #f97316; color: white; font-weight: bold; }
-
-        .btn-main { background: #f59e0b; color: #0f172a; border: none; font-size: 14px; font-weight: bold; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 10px; text-align: center; }
-        .btn-main:hover { background: #d97706; }
+        .btn-main { width: 100%; background: var(--gold); color: #451a03; border: none; padding: 14px; font-size: 16px; font-weight: 900; border-radius: 8px; cursor: pointer; transition: 0.2s; text-align: center; display: block; margin-top: 15px; box-shadow: 0 4px 0 #ca8a04; }
+        .btn-main:active { transform: translateY(4px); box-shadow: 0 0 0 #ca8a04; }
 
         /* 配點面板 */
-        .attr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .attr-name { font-size: 12px; width: 35px; color: #cbd5e1; }
-        .bar-bg { flex-grow: 1; height: 6px; background: #334155; border-radius: 3px; margin: 0 8px; overflow: hidden; position: relative; }
-        .bar-fill { height: 100%; background: #ef4444; }
-        .attr-cost-lbl { font-size: 10px; color: #94a3b8; width: 50px; text-align: right; margin-right: 4px; }
-        .attr-val { font-size: 12px; font-weight: bold; width: 22px; text-align: right; margin-right: 6px; }
-        .btn-ctrl-group { display: flex; gap: 4px; }
-        .btn-ctrl { background: #ea580c; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .train-header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--bg-card-light); }
+        .pts-left { color: var(--primary); font-size: 18px; font-weight: 900; }
+        .attr-row { display: flex; align-items: center; margin-bottom: 12px; gap: 8px; }
+        .attr-name { width: 40px; font-size: 13px; color: var(--text-main); font-weight: bold; }
+        .attr-bar-bg { flex: 1; height: 8px; background: var(--bg-card); border-radius: 4px; overflow: hidden; position: relative; }
+        .attr-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #ef4444); border-radius: 4px; transition: 0.3s width; }
+        .attr-val { width: 24px; font-size: 14px; font-weight: 900; text-align: right; }
+        .attr-cost { width: 45px; font-size: 10px; color: var(--text-muted); text-align: right; }
+        .btn-ctrl { background: var(--bg-card-light); color: white; border: none; width: 28px; height: 28px; border-radius: 6px; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-ctrl:active { background: var(--primary); }
 
-        .event-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .btn-option { background: #0f172a; border: 1px solid #334155; color: white; text-align: left; padding: 10px; border-radius: 8px; margin-bottom: 6px; width: 100%; cursor: pointer; font-size: 12px; line-height: 1.4; }
-        .btn-option:hover { border-color: #f97316; background: #1e293b; }
+        /* 事件卡片 */
+        .event-card { background: var(--bg-card); border: 1px solid var(--bg-card-light); border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; overflow: hidden; }
+        .event-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+        .event-tag { font-size: 10px; color: var(--primary); font-weight: 900; margin-bottom: 8px; }
+        .event-title { font-size: 16px; font-weight: 900; margin: 0 0 8px 0; }
+        .event-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 15px; }
+        .option-btn { width: 100%; text-align: left; background: var(--bg-dark); border: 1px solid var(--bg-card-light); color: var(--text-main); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        .option-btn:hover { border-color: var(--primary); background: rgba(234, 88, 12, 0.1); }
+        
+        /* 擲骰動畫區 */
+        .dice-area { text-align: center; padding: 20px; background: var(--bg-card); border-radius: 12px; margin-bottom: 15px; border: 1px dashed var(--bg-card-light); }
+        .dice-icon { font-size: 48px; display: inline-block; animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-15deg); } 100% { transform: rotate(0deg); } }
+        .dice-result { font-size: 24px; font-weight: 900; color: var(--primary); margin: 10px 0; }
+        .dice-effect { font-size: 12px; color: var(--green); font-weight: bold; background: rgba(34, 197, 94, 0.1); padding: 6px 12px; border-radius: 12px; display: inline-block; }
 
-        /* 8 格數據展示 */
-        .data-8-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
-        .data-card { background: #1e293b; padding: 8px; text-align: center; border-radius: 6px; }
-        .data-num { font-size: 15px; font-weight: bold; color: #38bdf8; }
-        .data-lbl { font-size: 9px; color: #94a3b8; }
+        /* 數據結算 8格 */
+        .season-result-header { text-align: center; margin-bottom: 15px; }
+        .season-record { font-size: 32px; font-weight: 900; color: var(--gold); line-height: 1; margin-bottom: 5px; }
+        .season-subtitle { font-size: 12px; color: var(--text-muted); }
+        .data-8-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .data-card { background: var(--bg-card); padding: 10px 5px; text-align: center; border-radius: 8px; border: 1px solid var(--bg-card-light); }
+        .data-num { font-size: 16px; font-weight: 900; color: var(--text-main); }
+        .data-lbl { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 
-        .comment-item { background: #1e293b; padding: 8px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 5px; border-left: 3px solid #38bdf8; }
-        .comment-user { color: #38bdf8; font-weight: bold; margin-bottom: 2px; }
+        /* 評論區 */
+        .comments-section { background: var(--bg-card); border-radius: 12px; padding: 12px; margin-bottom: 15px; }
+        .comment-item { display: flex; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--bg-card-light); }
+        .comment-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .comment-avatar { width: 24px; height: 24px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold; }
+        .comment-body { flex: 1; }
+        .comment-user { font-size: 11px; font-weight: 900; color: var(--blue); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+        .comment-text { font-size: 12px; color: var(--text-main); line-height: 1.4; }
 
-        .toast-pop { background: #0284c7; color: white; padding: 8px 12px; border-radius: 6px; font-size: 11px; text-align: center; margin-bottom: 10px; font-weight: bold; }
-
-        .hidden { display: none; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-
-    <!-- 頂部固定球員面板 -->
-    <div id="player-card-panel" class="player-card hidden">
-        <div id="league-tag-display" class="league-badge-top">US PREP 美國高中聯賽</div>
-        <div class="player-header">
-            <div class="number-box" id="card-num">93</div>
-            <div class="player-info-main">
-                <div>
-                    <span class="player-name" id="card-name">王梓豪</span>
-                    <span class="player-tag" id="card-style">節奏型進攻後衛</span>
-                    <span class="star-tag hidden" id="card-star">⭐ 3星 · #384</span>
+<div class="app">
+    <!-- 頂部固定球員卡 (遊戲開始後顯示) -->
+    <div id="sticky-header" class="sticky-header hidden">
+        <div class="league-badge"><span id="ui-league">🏀 HK D1 學界 D1</span> <span id="ui-team">拔萃男書院</span></div>
+        <div class="player-card">
+            <div class="number-box" id="ui-num">91</div>
+            <div class="info-col">
+                <div class="name-row">
+                    <span class="name-txt" id="ui-name">林逐夢</span>
+                    <span class="archetype-tag" id="ui-archetype">多功能雙向側翼</span>
                 </div>
-                <div class="player-sub" id="card-sub">SG | 186cm / 78kg | 15歲 | Sunrise Christian Academy</div>
+                <div class="body-txt" id="ui-body">SF | 198cm / 100kg | 16歲</div>
+                <div class="badges-container" id="ui-badges"></div>
             </div>
             <div class="ovr-box">
-                <div class="ovr-val" id="card-ovr">41</div>
+                <div class="ovr-val" id="ui-ovr">42</div>
                 <div class="ovr-lbl">OVR</div>
             </div>
         </div>
-        <div class="stats-grid-top">
-            <div><div class="stat-top-val" id="card-hp">100</div><div class="stat-top-lbl">健康</div></div>
-            <div><div class="stat-top-val" id="card-morale">70</div><div class="stat-top-lbl">士氣</div></div>
-            <div><div class="stat-top-val" id="card-fame">10</div><div class="stat-top-lbl">名氣</div></div>
-            <div><div class="stat-top-val" id="card-money">$0</div><div class="stat-top-lbl">生涯收入</div></div>
+        <div class="stats-grid">
+            <div class="stat-item"><div class="stat-val" id="ui-hp" style="color:var(--green)">100</div><div class="stat-lbl">健康</div></div>
+            <div class="stat-item"><div class="stat-val" id="ui-morale" style="color:var(--blue)">70</div><div class="stat-lbl">士氣</div></div>
+            <div class="stat-item"><div class="stat-val" id="ui-fame">10</div><div class="stat-lbl">名氣</div></div>
+            <div class="stat-item"><div class="stat-val" id="ui-money" style="color:var(--gold)">0</div><div class="stat-lbl">生涯收入(萬)</div></div>
         </div>
-        <div class="badge-pill-container" id="card-badges"></div>
     </div>
 
-    <!-- 畫面 1: 創建角色 (開局選擇) -->
-    <div id="screen-create">
-        <h1 class="title">籃球人生</h1>
-        <div class="subtitle">HARDWOOD LIFE v2.0.18</div>
+    <!-- 畫面 1：創建角色 -->
+    <div id="view-create" class="scrollable">
+        <h1 class="title">HARDWOOD LIFE</h1>
+        <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-bottom:20px;">由高中、大學、國家隊，直登籃球最高殿堂。</div>
 
         <div class="form-group">
             <label>球員名字</label>
-            <input type="text" id="inp-name" value="王梓豪">
+            <input type="text" id="inp-name" value="陳星宇">
         </div>
         <div class="form-group">
             <label>背號 (0-99)</label>
-            <input type="number" id="inp-num" value="93">
+            <input type="number" id="inp-num" value="7">
         </div>
         <div class="form-group">
-            <label>球員背景</label>
-            <select id="inp-path" onchange="togglePathLocations()">
+            <label>球員背景 (影響劇情線)</label>
+            <select id="inp-path" onchange="updateLocations()">
+                <option value="hk">本土生 (香港高中出發)</option>
                 <option value="us">華裔球員 (美國高中出發)</option>
-                <option value="tw">本土生 (台灣高中出發)</option>
             </select>
         </div>
-
         <div class="form-group">
-            <label id="lbl-location">美國成長在地</label>
-            <div class="btn-grid-5" id="location-selector"></div>
+            <label id="lbl-location">出生地 / 地區</label>
+            <div class="grid-selector" id="loc-grid"></div>
         </div>
-
         <div class="form-group">
             <label>場上位置</label>
-            <div class="btn-grid-5" id="pos-selector">
-                <div class="chip-btn" onclick="selectPos('PG', this)">PG 控球後衛</div>
-                <div class="chip-btn active" onclick="selectPos('SG', this)">SG 得分後衛</div>
-                <div class="chip-btn" onclick="selectPos('SF', this)">SF 小前鋒</div>
-                <div class="chip-btn" onclick="selectPos('PF', this)">PF 大前鋒</div>
-                <div class="chip-btn" onclick="selectPos('C', this)">C 中鋒</div>
+            <div class="grid-selector" id="pos-grid">
+                <div class="chip active" onclick="selectPos('PG', this)">PG 控球後衛</div>
+                <div class="chip" onclick="selectPos('SG', this)">SG 得分後衛</div>
+                <div class="chip" onclick="selectPos('SF', this)">SF 小前鋒</div>
+                <div class="chip" onclick="selectPos('PF', this)">PF 大前鋒</div>
+                <div class="chip" onclick="selectPos('C', this)">C 中鋒</div>
             </div>
         </div>
-
-        <button class="btn-main" onclick="startCareer()">開始籃球人生 🏀</button>
-    </div>
-
-    <!-- 畫面 2: 序幕故事 -->
-    <div id="screen-story" class="hidden">
-        <div class="event-card">
-            <div style="font-size:10px; color:#f97316; font-weight:bold;">序幕 · 夢的起點</div>
-            <h3 style="margin:6px 0; font-size:16px;">16 歲，高中一年級</h3>
-            <p style="font-size:12px; color:#cbd5e1; line-height:1.6;">從小在美國長大的你，以華裔球員身份一路打進高強度的 AAU 與 Prep School 體系。你知道外界對黃種人球員的刻板印象，但你想用實力說話。如今，你以高中一年的身份，加入了籃球名校 Sunrise Christian Academy。</p>
-        </div>
-        <button class="btn-main" onclick="enterTrainingScreen()">踏上球場，開始高中生涯 ▶</button>
-    </div>
-
-    <!-- 畫面 3: 季前特訓配點 (1:1 複製影片 UI) -->
-    <div id="screen-train" class="hidden">
-        <div id="growth-toast" class="toast-pop hidden">
-            發育期！你長高了 <span id="growth-cm">2</span> 公分！目前 <span id="growth-h">188</span>cm
-        </div>
-
-        <div style="background:#1e293b; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span style="font-size:11px; color:#f97316; font-weight:bold;" id="train-season-tag">高中 高一(FR.) · 季前特訓</span>
-            <span style="font-size:11px; color:#cbd5e1; font-weight:bold;" id="train-team-name">Sunrise Christian Academy</span>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:#0f172a; padding:8px 12px; border-radius:6px; border:1px solid #1e293b;">
-            <span style="font-size:12px; color:#94a3b8;">剩餘訓練點：<b id="train-pts" style="color:#38bdf8; font-size:16px;">8</b></span>
-            <span style="font-size:12px; color:#94a3b8;">預估 OVR：<b id="train-ovr-preview" style="color:#ef4444; font-size:16px;">41</b></span>
-        </div>
         
-        <div id="attrs-list"></div>
+        <div class="event-card" style="border-color: var(--blue);">
+            <div style="font-size:11px; color:var(--blue); font-weight:bold;">起手側重：得分、三分。位置會影響能力權重與籃板/助攻上限。</div>
+        </div>
+
+        <button class="btn-main" onclick="startGame()">開始籃球人生 🏀</button>
+    </div>
+
+    <!-- 畫面 2：賽季前配點 -->
+    <div id="view-train" class="scrollable hidden">
+        <div class="train-header">
+            <div>
+                <div style="font-size:12px; color:var(--text-muted); font-weight:bold;">剩餘訓練點</div>
+                <div class="pts-left" id="train-pts">9</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:bold;">預估 OVR</div>
+                <div style="font-size:18px; font-weight:900; color:var(--red);" id="train-ovr">42</div>
+            </div>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-bottom:15px;">把訓練點投入想強化的能力。數值越高花費越貴，且<span style="color:var(--red)">最高無法超過潛力值上限</span>。</div>
+        
+        <div id="attr-list"></div>
 
         <button class="btn-main" onclick="finishTraining()">完成分配，開始賽季 ▶</button>
     </div>
 
-    <!-- 畫面 4: 四回合事件與擲骰 -->
-    <div id="screen-event" class="hidden">
+    <!-- 畫面 3：擲骰事件 -->
+    <div id="view-event" class="scrollable hidden">
         <div class="event-card">
-            <div style="font-size:10px; color:#f97316; font-weight:bold; margin-bottom:4px;" id="event-step-lbl">事件 · 選擇 1/4</div>
-            <h3 id="event-title" style="margin:0 0 8px 0; font-size:15px;">大學球探訪校週末</h3>
-            <p id="event-desc" style="font-size:12px; color:#cbd5e1; line-height:1.5;">你獲邀到預先參加夢想高中官訪。豪華球館、滿場學生、訓練中心與興奮簡報轟炸，招募正式進入白熱化。</p>
-            <div id="event-options" style="margin-top:10px;"></div>
+            <div class="event-tag" id="event-step">高中 高一(FR.) · 季中事件 1/4</div>
+            <h3 class="event-title" id="event-title">學界決賽前夕的質疑</h3>
+            <div class="event-desc" id="event-desc">傳媒指你球風太獨，未能融入球隊體系，對手教練更放話要鎖死你。</div>
+            <div id="event-options"></div>
         </div>
 
-        <div id="dice-box" class="hidden" style="background:#1e293b; padding:12px; border-radius:10px; border:1px solid #334155; text-align:center;">
-            <div id="dice-graphic" style="font-size:32px;">🎲</div>
-            <div id="dice-status-text" style="font-size:12px; color:#f59e0b; font-weight:bold; margin-top:2px;">擲骰中...</div>
-            <div id="dice-rewards" style="font-size:11px; color:#38bdf8; margin-top:4px;"></div>
-            <button id="btn-next-event" class="btn-main hidden" onclick="nextEventStep()">下一個事件 ▶</button>
+        <div id="dice-container" class="dice-area hidden">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">命運骰</div>
+            <div class="dice-icon" id="dice-anim">🎲</div>
+            <div class="dice-result hidden" id="dice-res">擲出 5</div>
+            <div class="dice-effect hidden" id="dice-eff">球商+2, 士氣+5</div>
+            <button class="btn-main hidden" id="btn-next-event" style="margin-top:15px; background:var(--bg-card-light); color:white; box-shadow:none;" onclick="nextEvent()">下一個事件 ▶</button>
         </div>
     </div>
 
-    <!-- 畫面 5: 賽季結算與動態評論 -->
-    <div id="screen-summary" class="hidden">
-        <div style="background:#1e293b; padding:10px; border-radius:8px; text-align:center; margin-bottom:10px;">
-            <h2 style="margin:0; color:#22c55e; font-size:20px;" id="summary-title">16 - 14</h2>
-            <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="summary-sub">止步「州錦標賽首輪」</div>
+    <!-- 畫面 4：賽季結算 -->
+    <div id="view-summary" class="scrollable hidden">
+        <div class="season-result-header">
+            <div class="event-tag" id="summary-tag">高中賽季回顧</div>
+            <div class="season-record" id="summary-record">14-2</div>
+            <div class="season-subtitle" id="summary-sub">止步「精英賽四強」 | 勝率 87%</div>
         </div>
 
         <div class="data-8-grid">
-            <div class="data-card"><div class="data-num" id="s-pts">7.6</div><div class="data-lbl">得分</div></div>
-            <div class="data-card"><div class="data-num" id="s-reb">2.9</div><div class="data-lbl">籃板</div></div>
-            <div class="data-card"><div class="data-num" id="s-ast">4.2</div><div class="data-lbl">助攻</div></div>
+            <div class="data-card"><div class="data-num" id="s-pts">15.4</div><div class="data-lbl">得分</div></div>
+            <div class="data-card"><div class="data-num" id="s-reb">5.9</div><div class="data-lbl">籃板</div></div>
+            <div class="data-card"><div class="data-num" id="s-ast">2.9</div><div class="data-lbl">助攻</div></div>
             <div class="data-card"><div class="data-num" id="s-stl">1.3</div><div class="data-lbl">抄截</div></div>
-            <div class="data-card"><div class="data-num" id="s-blk">0.6</div><div class="data-lbl">阻攻</div></div>
-            <div class="data-card"><div class="data-num" id="s-fg">39%</div><div class="data-lbl">投籃</div></div>
-            <div class="data-card"><div class="data-num" id="s-3p">22%</div><div class="data-lbl">三分</div></div>
-            <div class="data-card"><div class="data-num" id="s-gp">30</div><div class="data-lbl">出賽</div></div>
+            <div class="data-card"><div class="data-num" id="s-blk">1.1</div><div class="data-lbl">阻攻</div></div>
+            <div class="data-card"><div class="data-num" id="s-fg">47%</div><div class="data-lbl">投籃</div></div>
+            <div class="data-card"><div class="data-num" id="s-3p">36%</div><div class="data-lbl">三分</div></div>
+            <div class="data-card"><div class="data-num" id="s-gp">16</div><div class="data-lbl">出賽</div></div>
         </div>
 
-        <div style="font-size:11px; font-weight:bold; color:#38bdf8; margin-bottom:6px;">💬 網友熱評：</div>
-        <div id="comments-list"></div>
-
-        <button class="btn-main" onclick="startNextTurn()">繼續 ▶</button>
-    </div>
-
-    <!-- 畫面 6: NBA Draft Combine 聯合測試 -->
-    <div id="screen-combine" class="hidden">
-        <div class="event-card" style="border-color:#ea580c;">
-            <div style="font-size:10px; color:#f97316; font-weight:bold;">NBA DRAFT COMBINE</div>
-            <h3 style="margin:4px 0; font-size:16px;">五項測試，直接送達球隊透視室</h3>
-            <p style="font-size:11px; color:#cbd5e1;">服氣不是嘴上說說，相關屬性越高，越容易脫穎而出！</p>
+        <div class="comments-section">
+            <div style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-bottom:10px;">💬 網友熱議</div>
+            <div id="comments-list"></div>
         </div>
 
-        <div id="combine-tests-list"></div>
-        <button class="btn-main" id="btn-finish-combine" onclick="finishCombine()">進行測試與選秀 ▶</button>
-    </div>
-
-    <!-- 畫面 7: 選秀落選與 G-League 簽約 -->
-    <div id="screen-draft-result" class="hidden">
-        <div class="event-card" style="border-color:#ef4444;">
-            <div style="font-size:10px; color:#ef4444; font-weight:bold;">NBA DRAFT · UNDRAFTED</div>
-            <h3 style="margin:4px 0; font-size:16px;">60 個名字，沒有你的名字</h3>
-            <p style="font-size:11px; color:#cbd5e1; line-height:1.5;">第一輪結束，你坐在螢幕前；第二輪唱名，依然沒有聽到你的名字。但你的籃球生涯並未結束！</p>
-        </div>
-
-        <div style="background:#1e293b; padding:10px; border-radius:8px; border:1px solid #38bdf8; margin-bottom:10px;">
-            <div style="font-size:11px; color:#38bdf8; font-weight:bold;">🏀 G-League / 訓練營合約邀請：</div>
-            <div style="font-size:13px; font-weight:bold; margin-top:4px;" id="gleague-team-name">鹽湖城星群 (Utah Royals)</div>
-            <div style="font-size:10px; color:#94a3b8;">提供發展聯盟雙向合約 · 年薪 $160萬 (1年)</div>
-        </div>
-
-        <button class="btn-main" onclick="acceptGLeagueOffer()">接受發展聯盟合約 ▶</button>
+        <button class="btn-main" onclick="progressCareer()">繼續 ▶</button>
     </div>
 
 </div>
 
-<script>
-    const usCities = ["洛杉磯", "舊金山", "紐約", "芝加哥", "休士頓", "波士頓", "西雅圖", "檀香山"];
+<div id="toast" class="toast">發育期！你長高了 2 公分！</div>
 
-    let p = {
-        name: "王梓豪", num: 93, path: "us", location: "洛杉磯", pos: "SG",
-        age: 15, height: 186, weight: 78, ovr: 41, hp: 100, morale: 70, fame: 10, money: 0,
-        trainPts: 8, teamName: "Sunrise Christian Academy", currentStep: 1, starText: "",
-        leagueTag: "US PREP 美國高中聯賽",
-        badges: [],
-        attrs: { 得分: 46, 三分: 33, 籃板: 40, 組織: 40, 防守: 36, 體能: 43, 球商: 46 },
-        caps: { 得分: 85, 三分: 85, 籃板: 70, 組織: 80, 防守: 80, 體能: 85, 球商: 85 }
+<script>
+    // 遊戲資料
+    const hkDistricts = ["中西區", "灣仔", "東區", "南區", "油尖旺", "深水埗", "九龍城", "黃大仙", "觀塘", "葵青", "荃灣", "屯門", "元朗", "北區", "大埔", "沙田", "西貢", "離島"];
+    const usCities = ["洛杉磯", "紐約", "芝加哥", "侯斯頓", "波士頓", "西雅圖", "三藩市", "邁阿密"];
+    const attrsDef = ["得分", "三分", "籃板", "組織", "防守", "體能", "球商"];
+    
+    let player = {
+        name: "", num: 7, path: "hk", location: "", pos: "PG",
+        age: 16, height: 185, weight: 75,
+        league: "HK D1 學界", team: "拔萃男書院",
+        ovr: 42, hp: 100, morale: 70, fame: 10, money: 0,
+        badges: [], trainPts: 9, stage: "highschool", year: 1, eventStep: 1,
+        attrs: { 得分: 41, 三分: 39, 籃板: 39, 組織: 38, 防守: 42, 體能: 50, 球商: 43 },
+        caps: { 得分: 85, 三分: 85, 籃板: 70, 組織: 80, 防守: 85, 體能: 90, 球商: 85 }
     };
 
-    let selectedLocation = "洛杉磯";
-    let selectedPos = "SG";
-
-    function initForm() {
-        let container = document.getElementById('location-selector');
-        container.innerHTML = "";
-        usCities.forEach(d => {
-            let btn = document.createElement('div');
-            btn.className = "chip-btn" + (d === selectedLocation ? " active" : "");
-            btn.innerText = d;
-            btn.onclick = () => {
-                document.querySelectorAll('#location-selector .chip-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedLocation = d;
+    // UI 初始化
+    function updateLocations() {
+        let path = document.getElementById('inp-path').value;
+        let grid = document.getElementById('loc-grid');
+        let arr = path === 'hk' ? hkDistricts : usCities;
+        grid.innerHTML = "";
+        arr.forEach((loc, idx) => {
+            let chip = document.createElement('div');
+            chip.className = 'chip' + (idx === 0 ? ' active' : '');
+            chip.innerText = loc;
+            chip.onclick = () => {
+                grid.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                player.location = loc;
             };
-            container.appendChild(btn);
+            grid.appendChild(chip);
         });
+        player.location = arr[0];
     }
 
     function selectPos(pos, el) {
-        document.querySelectorAll('#pos-selector .chip-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('pos-grid').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
-        selectedPos = pos;
+        player.pos = pos;
     }
 
-    function updateCardUI() {
-        document.getElementById('card-num').innerText = p.num;
-        document.getElementById('card-name').innerText = p.name;
-        document.getElementById('league-tag-display').innerText = p.leagueTag;
+    // 更新頂部卡片
+    function updateHeader() {
+        document.getElementById('ui-num').innerText = player.num;
+        document.getElementById('ui-name').innerText = player.name;
+        document.getElementById('ui-league').innerText = player.league;
+        document.getElementById('ui-team').innerText = player.team;
+        document.getElementById('ui-body').innerText = `${player.pos} | ${player.height}cm / ${player.weight}kg | ${player.age}歲`;
         
-        let starEl = document.getElementById('card-star');
-        if (p.starText) {
-            starEl.innerText = p.starText;
-            starEl.classList.remove('hidden');
-        } else {
-            starEl.classList.add('hidden');
-        }
+        let ovrEl = document.getElementById('ui-ovr');
+        ovrEl.innerText = player.ovr;
+        if(player.ovr >= 80) ovrEl.style.color = 'var(--gold)';
+        else if(player.ovr >= 70) ovrEl.style.color = 'var(--green)';
+        else ovrEl.style.color = 'var(--red)';
 
-        document.getElementById('card-sub').innerText = `${p.pos} | ${p.height}cm / ${p.weight}kg | ${p.age}歲 | ${p.teamName}`;
-        document.getElementById('card-ovr').innerText = p.ovr;
-        document.getElementById('card-hp').innerText = p.hp;
-        document.getElementById('card-morale').innerText = p.morale;
-        document.getElementById('card-fame').innerText = p.fame;
-        document.getElementById('card-money').innerText = "$" + p.money + "萬";
+        document.getElementById('ui-hp').innerText = player.hp;
+        document.getElementById('ui-morale').innerText = player.morale;
+        document.getElementById('ui-fame').innerText = player.fame;
+        document.getElementById('ui-money').innerText = player.money;
 
-        let badgeContainer = document.getElementById('card-badges');
-        badgeContainer.innerHTML = "";
-        p.badges.forEach(b => {
-            let span = document.createElement('span');
-            span.className = 'badge-pill';
-            span.innerText = b;
-            badgeContainer.appendChild(span);
+        let bc = document.getElementById('ui-badges');
+        bc.innerHTML = "";
+        player.badges.forEach(b => {
+            let s = document.createElement('span');
+            s.className = 'badge ' + (b.includes('星') ? 'star' : 'fame');
+            s.innerText = b;
+            bc.appendChild(s);
         });
     }
 
-    function startCareer() {
-        p.name = document.getElementById('inp-name').value || "王梓豪";
-        p.num = document.getElementById('inp-num').value || 93;
+    function calcOVR() {
+        let sum = 0;
+        for(let k in player.attrs) sum += player.attrs[k];
+        player.ovr = Math.floor(sum / 7);
+        return player.ovr;
+    }
+
+    function showToast(msg) {
+        let t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function switchView(viewId) {
+        ['view-create', 'view-train', 'view-event', 'view-summary'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(viewId).classList.remove('hidden');
+    }
+
+    // 遊戲流程
+    function startGame() {
+        player.name = document.getElementById('inp-name').value || "陳星宇";
+        player.num = document.getElementById('inp-num').value || 7;
+        player.path = document.getElementById('inp-path').value;
         
-        document.getElementById('screen-create').classList.add('hidden');
-        document.getElementById('screen-story').classList.remove('hidden');
-    }
-
-    function enterTrainingScreen() {
-        document.getElementById('screen-story').classList.add('hidden');
-        document.getElementById('player-card-panel').classList.remove('hidden');
-        document.getElementById('screen-train').classList.remove('hidden');
-
-        updateCardUI();
-        renderTrainScreen();
-    }
-
-    function renderTrainScreen() {
-        document.getElementById('train-pts').innerText = p.trainPts;
-        document.getElementById('train-ovr-preview').innerText = p.ovr;
-
-        let container = document.getElementById('attrs-list');
-        container.innerHTML = "";
-
-        for (let key in p.attrs) {
-            let val = p.attrs[key];
-
-            let row = document.createElement('div');
-            row.className = "attr-row";
-            row.innerHTML = `
-                <div class="attr-name">${key}</div>
-                <div class="bar-bg"><div class="bar-fill" style="width:${(val/100)*100}%"></div></div>
-                <div class="attr-cost-lbl">1點/級</div>
-                <div class="attr-val">${val}</div>
-                <div class="btn-ctrl-group">
-                    <button class="btn-ctrl" onclick="changeAttr('${key}', 1)">+</button>
-                </div>
-            `;
-            container.appendChild(row);
+        if (player.path === 'hk') {
+            player.badges = ["🌟 全港矚目新星", "🇭🇰 香港第一人"];
+            player.league = "學界 D1";
+            player.team = "拔萃男書院";
+        } else {
+            player.badges = ["🌟 全美四星高中生", "🇺🇸 華裔潛力股"];
+            player.league = "US PREP";
+            player.team = "Sunrise Christian Academy";
         }
+
+        document.getElementById('sticky-header').classList.remove('hidden');
+        calcOVR();
+        updateHeader();
+        initTraining();
+        switchView('view-train');
     }
 
-    function changeAttr(key, delta) {
-        if (p.trainPts >= 1) {
-            p.attrs[key] += 1;
-            p.trainPts -= 1;
-            p.ovr = Math.floor((p.attrs.得分 + p.attrs.三分 + p.attrs.籃板 + p.attrs.組織 + p.attrs.防守 + p.attrs.體能 + p.attrs.球商) / 7);
-            updateCardUI();
-            renderTrainScreen();
+    function initTraining() {
+        document.getElementById('train-pts').innerText = player.trainPts;
+        document.getElementById('train-ovr').innerText = player.ovr;
+        let list = document.getElementById('attr-list');
+        list.innerHTML = "";
+
+        attrsDef.forEach(attr => {
+            let val = player.attrs[attr];
+            let cost = Math.floor(val / 20) + 1; // 簡單累進花費
+            
+            let row = document.createElement('div');
+            row.className = 'attr-row';
+            row.innerHTML = `
+                <div class="attr-name">${attr}</div>
+                <div class="attr-bar-bg"><div class="attr-bar-fill" style="width:${(val/99)*100}%"></div></div>
+                <div class="attr-cost">${cost}點/級</div>
+                <div class="attr-val">${val}</div>
+                <button class="btn-ctrl" onclick="addAttr('${attr}')">+</button>
+            `;
+            list.appendChild(row);
+        });
+    }
+
+    function addAttr(attr) {
+        let val = player.attrs[attr];
+        let cost = Math.floor(val / 20) + 1;
+        if (player.trainPts >= cost && val < player.caps[attr]) {
+            player.trainPts -= cost;
+            player.attrs[attr]++;
+            calcOVR();
+            updateHeader();
+            initTraining();
         }
     }
 
     function finishTraining() {
-        document.getElementById('screen-train').classList.add('hidden');
-        document.getElementById('screen-event').classList.remove('hidden');
-        p.currentStep = 1;
-        renderEventScreen();
+        player.eventStep = 1;
+        renderEvent();
+        switchView('view-event');
     }
 
-    function renderEventScreen() {
-        document.getElementById('dice-box').classList.add('hidden');
-        document.getElementById('event-step-lbl').innerText = `訓練 ${p.currentStep}/4`;
+    function renderEvent() {
+        document.getElementById('dice-container').classList.add('hidden');
+        document.getElementById('event-options').classList.remove('hidden');
+        
+        let title, desc, opt1, opt2;
+        if (player.stage === "highschool") {
+            document.getElementById('event-step').innerText = `高中 第${player.year}年 · 訓練 ${player.eventStep}/4`;
+            if (player.path === 'hk') {
+                title = "學界精英賽前的壓力";
+                desc = "傳媒同連登討論區都話你球風太獨，唔夾球隊體系，對手教練更放話要針對性聯防鎖死你。";
+                opt1 = "🏀 專注自己最強武器 (強化招牌技術)";
+                opt2 = "🤝 配合教練戰術，增加無球跑動 (團隊至上)";
+            } else {
+                title = "名校主帥場邊觀戰";
+                desc = "今晚NCAA D1名校教練坐喺第一排睇你打波。佢哋只係講咗一句：「Show us who you are.」";
+                opt1 = "🔥 瘋狂單打，展示得分爆發力 (高風險)";
+                opt2 = "🛡️ 用防守同組織回應 (保守穩健)";
+            }
+        } else {
+            document.getElementById('event-step').innerText = `職業生涯 · 第${player.year}年 · 訓練 ${player.eventStep}/4`;
+            title = "合約年與球權爭奪";
+            desc = "教練安排你做定點射手，但你想爭取更多持球時間證明身價。";
+            opt1 = "💬 向教練攤牌要求球權 (衝突風險)";
+            opt2 = "💪 用效率證明自己，服從安排 (穩步成長)";
+        }
 
-        let optsContainer = document.getElementById('event-options');
-        optsContainer.innerHTML = `
-            <button class="btn-option" onclick="triggerDiceAnimation()">1. 主動詢問問星級球員定位 (球商+)</button>
-            <button class="btn-option" onclick="triggerDiceAnimation()">2. 觀察球隊文化與隊友 (體能+)</button>
+        document.getElementById('event-title').innerText = title;
+        document.getElementById('event-desc').innerText = desc;
+        
+        document.getElementById('event-options').innerHTML = `
+            <button class="option-btn" onclick="rollDiceEvent(1)">${opt1}</button>
+            <button class="option-btn" onclick="rollDiceEvent(2)">${opt2}</button>
         `;
     }
 
-    function triggerDiceAnimation() {
-        let box = document.getElementById('dice-box');
-        box.classList.remove('hidden');
+    function rollDiceEvent(choice) {
+        document.getElementById('event-options').classList.add('hidden');
+        let diceArea = document.getElementById('dice-container');
+        diceArea.classList.remove('hidden');
+        document.getElementById('dice-anim').style.animation = "shake 0.5s infinite";
+        document.getElementById('dice-res').classList.add('hidden');
+        document.getElementById('dice-eff').classList.add('hidden');
+        document.getElementById('btn-next-event').classList.add('hidden');
 
         setTimeout(() => {
-            let dice = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('dice-graphic').innerText = "🎲";
-            document.getElementById('dice-status-text').innerText = "擲出 " + dice;
-            document.getElementById('dice-rewards').innerText = dice >= 4 ? "表達出色！球商 +2，名氣 +5" : "數據平穩。";
+            document.getElementById('dice-anim').style.animation = "none";
+            let roll = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('dice-res').innerText = `擲出 ${roll}`;
+            document.getElementById('dice-res').classList.remove('hidden');
             
-            if (dice >= 4) { p.fame += 5; p.attrs.球商 += 2; }
-            updateCardUI();
-
+            let eff = "";
+            if (roll >= 4) {
+                eff = choice === 1 ? "突破瓶頸！得分+2, 名氣+5" : "完美融入！球商+2, 士氣+10";
+                if(choice===1) { player.attrs.得分+=2; player.fame+=5; }
+                else { player.attrs.球商+=2; player.morale+=10; }
+            } else {
+                eff = choice === 1 ? "過於心急，失誤頻頻... 士氣-5" : "中規中矩，防守+1";
+                if(choice===1) player.morale -= 5;
+                else player.attrs.防守 += 1;
+            }
+            document.getElementById('dice-eff').innerText = eff;
+            document.getElementById('dice-eff').classList.remove('hidden');
             document.getElementById('btn-next-event').classList.remove('hidden');
-        }, 500);
+            
+            calcOVR();
+            updateHeader();
+        }, 800);
     }
 
-    function nextEventStep() {
-        if (p.currentStep < 4) {
-            p.currentStep += 1;
-            renderEventScreen();
+    function nextEvent() {
+        if (player.eventStep < 4) {
+            player.eventStep++;
+            renderEvent();
         } else {
-            document.getElementById('screen-event').classList.add('hidden');
-            document.getElementById('screen-summary').classList.remove('hidden');
-            renderSummaryScreen();
+            renderSummary();
+            switchView('view-summary');
         }
     }
 
-    function renderSummaryScreen() {
-        let wins = Math.floor(Math.random() * 4) + 14;
-        let losses = 30 - wins;
-        document.getElementById('summary-title').innerText = `${wins} - ${losses}`;
+    function renderSummary() {
+        let isHK = player.path === 'hk';
+        let isPro = player.stage === "pro";
         
-        document.getElementById('s-pts').innerText = (p.attrs.得分 * 0.18).toFixed(1);
-        document.getElementById('s-reb').innerText = (p.attrs.籃板 * 0.08).toFixed(1);
-        document.getElementById('s-ast').innerText = (p.attrs.組織 * 0.09).toFixed(1);
-
-        // 正確使用美式/英文論壇評論
-        let usComments = [
-            { user: "@BayAreaHoops", text: "看出來很努力，但這條美國高中招募路線真的被打破了。" },
-            { user: "@GM", text: "YT主播隨後又要開始做影片開噴了。" },
-            { user: "@前微步", text: "一步一腳印，數據漸入佳境！" }
-        ];
-
-        let container = document.getElementById('comments-list');
-        container.innerHTML = "";
-        usComments.forEach(c => {
-            let div = document.createElement('div');
-            div.className = "comment-item";
-            div.innerHTML = `<div class="comment-user">${c.user}</div><div>${c.text}</div>`;
-            container.appendChild(div);
+        let wins = Math.floor(player.ovr / 2) + Math.floor(Math.random() * 10);
+        let losses = isPro ? 82 - wins : 30 - wins;
+        if(losses < 0) losses = 0;
+        
+        document.getElementById('summary-record').innerText = `${wins} - ${losses}`;
+        
+        let pPts = (player.attrs.得分 * 0.25 + Math.random()*2).toFixed(1);
+        let pReb = (player.attrs.籃板 * 0.12).toFixed(1);
+        let pAst = (player.attrs.組織 * 0.15).toFixed(1);
+        
+        document.getElementById('s-pts').innerText = pPts;
+        document.getElementById('s-reb').innerText = pReb;
+        document.getElementById('s-ast').innerText = pAst;
+        
+        let comments = document.getElementById('comments-list');
+        comments.innerHTML = "";
+        
+        let pool = [];
+        if (isHK && !isPro) {
+            pool = [
+                {u: "@連登籃球台", c: "嘩，呢條友打學界屈晒機，遲早入港隊啦！", a: "L"},
+                {u: "@修頓街坊", c: "數據靚係靚，但去到修頓會唔會腳軟先？", a: "S"},
+                {u: "@前港隊教練", c: "技術扎實，防守可以再硬淨啲。", a: "C"}
+            ];
+        } else if (!isHK && !isPro) {
+             pool = [
+                {u: "@BayAreaHoops", c: "He is destroying the US high school system. Insane!", a: "B"},
+                {u: "@AAU老球探", c: "華裔球員嘅天花板，絕對有機會打NCAA D1。", a: "S"}
+            ];
+        } else {
+            pool = [
+                {u: "@深淵勇士", c: "年度陣容不是情懷，是整季硬實力認證！", a: "W"},
+                {u: "@gm", c: "這季 " + pPts + " 分，球隊有他就是定心丸。", a: "G"}
+            ];
+        }
+        
+        pool.forEach(p => {
+            comments.innerHTML += `
+                <div class="comment-item">
+                    <div class="comment-avatar">${p.a}</div>
+                    <div class="comment-body">
+                        <div class="comment-user">${p.u}</div>
+                        <div class="comment-text">${p.c}</div>
+                    </div>
+                </div>
+            `;
         });
     }
 
-    function startNextTurn() {
-        p.age += 1;
-        p.height += 2;
-        p.weight += 3;
-        p.trainPts = 8;
-
-        // 升學與動態切換（1:1 還原影片路線）
-        if (p.age === 18) {
-            p.teamName = "Texas (NCAA D1)";
-            p.leagueTag = "D1 美國大學一級籃球";
-            p.starText = "⭐ 4星 · #60";
-        } else if (p.age === 20) {
-            // 觸發 NBA Combine 測試
-            document.getElementById('screen-summary').classList.add('hidden');
-            document.getElementById('screen-combine').classList.remove('hidden');
-            renderCombineTests();
+    function progressCareer() {
+        player.age++;
+        player.year++;
+        player.trainPts = player.age < 22 ? 8 : 4; 
+        player.money += player.stage === "pro" ? 500 : 0;
+        
+        if (player.age === 17 && Math.random() > 0.5) {
+            player.height += 2;
+            showToast(`發育期！你長高了 2 公分！目前 ${player.height}cm`);
+        }
+        
+        // 模擬生涯進程切換
+        if (player.age === 19 && player.stage === "highschool") {
+            player.stage = "college";
+            player.league = player.path === 'hk' ? "香港甲一" : "NCAA D1";
+            player.team = player.path === 'hk' ? "南華" : "Alabama";
+            alert(`【生涯突破】你加入了 ${player.team}！`);
+        } else if (player.age === 20 && player.stage === "college") {
+            player.stage = "pro";
+            player.league = "NBA / 職業聯賽";
+            player.team = "聖安東尼奧銀刺";
+            player.badges.push("🏆 職業球員");
+            alert("【選秀大會】恭喜你以次輪第44順位被選中，正式展開職業生涯！");
+        } else if (player.age >= 36) {
+            alert("【正式退休】你的生涯各項數據已達頂峰，入選名人堂！遊戲結束。");
             return;
         }
 
-        updateCardUI();
-        document.getElementById('screen-summary').classList.add('hidden');
-        document.getElementById('screen-train').classList.remove('hidden');
-        renderTrainScreen();
+        updateHeader();
+        initTraining();
+        switchView('view-train');
     }
 
-    function renderCombineTests() {
-        let container = document.getElementById('combine-tests-list');
-        container.innerHTML = `
-            <div style="background:#1e293b; padding:10px; border-radius:6px; margin-bottom:6px; font-size:12px;">
-                <div style="font-weight:bold; color:#38bdf8;">1. 最高摸高 / 垂直彈跳</div>
-                <div style="color:#22c55e; margin-top:2px;">成績：327 cm (第 40/75 名)</div>
-            </div>
-            <div style="background:#1e293b; padding:10px; border-radius:6px; margin-bottom:6px; font-size:12px;">
-                <div style="font-weight:bold; color:#38bdf8;">2. 四分之三球場衝刺</div>
-                <div style="color:#22c55e; margin-top:2px;">成績：3.30 秒 (第 37/75 名)</div>
-            </div>
-        `;
-    }
-
-    function finishCombine() {
-        document.getElementById('screen-combine').classList.add('hidden');
-        document.getElementById('screen-draft-result').classList.remove('hidden');
-    }
-
-    function acceptGLeagueOffer() {
-        p.teamName = "鹽湖城星群 (G-League)";
-        p.leagueTag = "NBA G-LEAGUE 發展聯盟";
-        p.money += 160;
-        p.badges.push("🏆 G-League 球員");
-
-        updateCardUI();
-        document.getElementById('screen-draft-result').classList.add('hidden');
-        document.getElementById('screen-train').classList.remove('hidden');
-        renderTrainScreen();
-    }
-
-    initForm();
+    // 初始化下拉選單
+    updateLocations();
 </script>
 </body>
 </html>
